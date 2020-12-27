@@ -59,8 +59,8 @@ class Ui_MainWindow(object):
         font.setPointSize(18)
         self.subred_drop.setFont(font)
         self.subred_drop.setObjectName("subred_drop")
-        self.subred_drop.addItem("")
-        self.subred_drop.addItem("")
+        items = ["" for x in subreddits]
+        self.subred_drop.addItems(items)
         self.remove_button = QtWidgets.QPushButton(self.centralwidget)
         self.remove_button.setGeometry(QtCore.QRect(710, 150, 341, 91))
         font = QtGui.QFont()
@@ -73,6 +73,7 @@ class Ui_MainWindow(object):
         font.setPointSize(22)
         self.search_button.setFont(font)
         self.search_button.setObjectName("search_button")
+        self.search_button.clicked.connect(self.search)
         self.post_label = QtWidgets.QLabel(self.centralwidget)
         self.post_label.setGeometry(QtCore.QRect(70, 510, 511, 41))
         font = QtGui.QFont()
@@ -129,8 +130,8 @@ class Ui_MainWindow(object):
         self.heading.setText(_translate("MainWindow", "r/stats"))
         self.add_button.setText(_translate("MainWindow", "Add Subreddit"))
         self.label.setText(_translate("MainWindow", "Get recent top comment of: r/"))
-        self.subred_drop.setItemText(0, _translate("MainWindow", "datascience"))
-        self.subred_drop.setItemText(1, _translate("MainWindow", "MachineLearning"))
+        for index, subreddit in enumerate(subreddits):
+        	self.subred_drop.setItemText(index, _translate("MainWindow", subreddit))
         self.remove_button.setText(_translate("MainWindow", "Remove Subreddit"))
         self.search_button.setText(_translate("MainWindow", "Search"))
         self.post_label.setText(_translate("MainWindow", "#:"))
@@ -139,9 +140,25 @@ class Ui_MainWindow(object):
         self.likes_label.setText(_translate("MainWindow", "Likes:"))
         self.comments_label.setText(_translate("MainWindow", "Comments:"))
 
+    def search(self):
+    	import reddit_scrape as rs
+    	subreddit = self.subred_drop.currentText()
+    	post = rs.scrape(subreddit)
+    	self.post_label.setText("#: " + str(post[0]))
+    	self.post_label.adjustSize()
+    	self.title_label.setText("Title: " + post[1][0:30] + " ... " + post[1][-40:-(len(subreddit)+8)])
+    	self.title_label.adjustSize()
+    	self.author_label.setText("Author: " + post[2])
+    	self.author_label.adjustSize()
+    	self.likes_label.setText("Likes: " + str(post[3]))
+    	self.likes_label.adjustSize()
+    	self.comments_label.setText("Comments: " + post[4])
+    	self.comments_label.adjustSize()
 
 if __name__ == "__main__":
     import sys
+    global subreddits
+    subreddits = ["datascience", "MachineLearning", "pewdiepie"]
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
