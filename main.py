@@ -74,6 +74,7 @@ class Ui_MainWindow(object):
         font.setPointSize(18)
         self.remove_button.setFont(font)
         self.remove_button.setObjectName("remove_button")
+        self.remove_button.clicked.connect(self.remove_subreddit)
 
         self.search_button = QtWidgets.QPushButton(self.centralwidget)
         self.search_button.setGeometry(QtCore.QRect(450, 400, 281, 91))
@@ -157,26 +158,33 @@ class Ui_MainWindow(object):
     def search(self):
     	import reddit_scrape as rs
     	subreddit = self.subred_drop.currentText()
-    	post = rs.scrape(subreddit)
-    	self.post_label.setText("#: " + str(post[0]))
-    	self.post_label.adjustSize()
-    	self.title_label.setText("Title: " + post[1][0:30] + " ... " + post[1][-40:-(len(subreddit)+8)])
-    	self.title_label.adjustSize()
-    	self.author_label.setText("Author: " + post[2])
-    	self.author_label.adjustSize()
-    	self.likes_label.setText("Likes: " + str(post[3]))
-    	self.likes_label.adjustSize()
-    	self.comments_label.setText("Comments: " + post[4])
-    	self.comments_label.adjustSize()
+    	try:
+    		post = rs.scrape(subreddit)
+    		self.post_label.setText("#: " + str(post[0]))
+    		self.post_label.adjustSize()
+    		self.title_label.setText("Title: " + post[1][0:30] + " ... " + post[1][-40:-(len(subreddit)+8)])
+    		self.title_label.adjustSize()
+    		self.author_label.setText("Author: " + post[2])
+    		self.author_label.adjustSize()
+    		self.likes_label.setText("Likes: " + str(post[3]))
+    		self.likes_label.adjustSize()
+    		self.comments_label.setText("Comments: " + post[4])
+    		self.comments_label.adjustSize()
+    	except:
+    		msg = QMessageBox()
+    		msg.setWindowTitle("Error")
+    		msg.setText("Select a valid subreddit!")
+    		msg.setIcon(QMessageBox.Critical)
+    		z = msg.exec_()
 
     def add_subreddit(self):
-    	new_subreddit, fill = QInputDialog.getText(MainWindow, 'getText', 'Enter the subreddit: r/')
+    	new_subreddit, fill = QInputDialog.getText(MainWindow, 'Add a subreddit', 'Enter the subreddit: r/')
     	if fill:
     		if new_subreddit not in subreddits:
     			subreddits.append(new_subreddit)
     			file_change = open("subreddits.txt","a")
-    			file.write(',' + new_subreddit)
-    			file.close()
+    			file_change.write(',' + new_subreddit)
+    			file_change.close()
     			msg = QMessageBox()
     			msg.setWindowTitle("Success!")
     			msg.setText("Restart application to see changes")
@@ -189,16 +197,40 @@ class Ui_MainWindow(object):
     			msg.setIcon(QMessageBox.Warning)
     			y = msg.exec_()
 
+    def remove_subreddit(self):
+    	wipe_subreddit, fill = QInputDialog.getText(MainWindow, 'Remove a subreddit', 'Enter the subreddit: r/')
+    	if fill:
+    		if wipe_subreddit in subreddits:
+    			subreddits.remove(wipe_subreddit)
+    			file_change = open("subreddits.txt","w")
+    			try:
+    				for i in range(999):
+    					file_change.write("," + str(subreddits[i]))
+    			except:
+    				pass
+    			msg = QMessageBox()
+    			msg.setWindowTitle("Success!")
+    			msg.setText("Restart application to see changes")
+    			msg.setIcon(QMessageBox.Information)
+    			x = msg.exec_()
+    		else:
+    			msg = QMessageBox()
+    			msg.setWindowTitle("Oops!")
+    			msg.setText("The subreddit was not found")
+    			msg.setIcon(QMessageBox.Warning)
+    			y = msg.exec_()
+
 
 
 if __name__ == "__main__":
     import sys
     global subreddits
     file = open("subreddits.txt","r+")
-    subreddits = file.read().split(',')
+    subreddits = file.read().split(',')[1:]
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
+    file.close()
