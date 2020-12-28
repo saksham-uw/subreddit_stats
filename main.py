@@ -9,6 +9,7 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QDialog, QInputDialog, QMessageBox
 
 
 class Ui_MainWindow(object):
@@ -21,6 +22,7 @@ class Ui_MainWindow(object):
         font.setPointSize(8)
         MainWindow.setFont(font)
         MainWindow.setAutoFillBackground(True)
+
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.heading = QtWidgets.QLabel(self.centralwidget)
@@ -38,12 +40,15 @@ class Ui_MainWindow(object):
         self.heading.setAutoFillBackground(True)
         self.heading.setAlignment(QtCore.Qt.AlignCenter)
         self.heading.setObjectName("heading")
+
         self.add_button = QtWidgets.QPushButton(self.centralwidget)
         self.add_button.setGeometry(QtCore.QRect(160, 150, 281, 91))
         font = QtGui.QFont()
         font.setPointSize(18)
         self.add_button.setFont(font)
         self.add_button.setObjectName("add_button")
+        self.add_button.clicked.connect(self.add_subreddit)
+
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setGeometry(QtCore.QRect(220, 310, 511, 41))
         font = QtGui.QFont()
@@ -53,6 +58,7 @@ class Ui_MainWindow(object):
         font.setWeight(75)
         self.label.setFont(font)
         self.label.setObjectName("label")
+
         self.subred_drop = QtWidgets.QComboBox(self.centralwidget)
         self.subred_drop.setGeometry(QtCore.QRect(719, 305, 305, 55))
         font = QtGui.QFont()
@@ -61,12 +67,14 @@ class Ui_MainWindow(object):
         self.subred_drop.setObjectName("subred_drop")
         items = ["" for x in subreddits]
         self.subred_drop.addItems(items)
+
         self.remove_button = QtWidgets.QPushButton(self.centralwidget)
         self.remove_button.setGeometry(QtCore.QRect(710, 150, 341, 91))
         font = QtGui.QFont()
         font.setPointSize(18)
         self.remove_button.setFont(font)
         self.remove_button.setObjectName("remove_button")
+
         self.search_button = QtWidgets.QPushButton(self.centralwidget)
         self.search_button.setGeometry(QtCore.QRect(450, 400, 281, 91))
         font = QtGui.QFont()
@@ -74,6 +82,7 @@ class Ui_MainWindow(object):
         self.search_button.setFont(font)
         self.search_button.setObjectName("search_button")
         self.search_button.clicked.connect(self.search)
+
         self.post_label = QtWidgets.QLabel(self.centralwidget)
         self.post_label.setGeometry(QtCore.QRect(70, 510, 511, 41))
         font = QtGui.QFont()
@@ -83,6 +92,7 @@ class Ui_MainWindow(object):
         font.setWeight(75)
         self.post_label.setFont(font)
         self.post_label.setObjectName("post_label")
+
         self.title_label = QtWidgets.QLabel(self.centralwidget)
         self.title_label.setGeometry(QtCore.QRect(70, 560, 511, 41))
         font = QtGui.QFont()
@@ -92,6 +102,7 @@ class Ui_MainWindow(object):
         font.setWeight(75)
         self.title_label.setFont(font)
         self.title_label.setObjectName("title_label")
+
         self.author_label = QtWidgets.QLabel(self.centralwidget)
         self.author_label.setGeometry(QtCore.QRect(70, 610, 511, 41))
         font = QtGui.QFont()
@@ -101,6 +112,7 @@ class Ui_MainWindow(object):
         font.setWeight(75)
         self.author_label.setFont(font)
         self.author_label.setObjectName("author_label")
+
         self.likes_label = QtWidgets.QLabel(self.centralwidget)
         self.likes_label.setGeometry(QtCore.QRect(70, 660, 511, 41))
         font = QtGui.QFont()
@@ -110,6 +122,7 @@ class Ui_MainWindow(object):
         font.setWeight(75)
         self.likes_label.setFont(font)
         self.likes_label.setObjectName("likes_label")
+
         self.comments_label = QtWidgets.QLabel(self.centralwidget)
         self.comments_label.setGeometry(QtCore.QRect(70, 710, 511, 41))
         font = QtGui.QFont()
@@ -119,6 +132,7 @@ class Ui_MainWindow(object):
         font.setWeight(75)
         self.comments_label.setFont(font)
         self.comments_label.setObjectName("comments_label")
+
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
@@ -126,7 +140,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Subreddit Stats"))
         self.heading.setText(_translate("MainWindow", "r/stats"))
         self.add_button.setText(_translate("MainWindow", "Add Subreddit"))
         self.label.setText(_translate("MainWindow", "Get recent top comment of: r/"))
@@ -155,10 +169,33 @@ class Ui_MainWindow(object):
     	self.comments_label.setText("Comments: " + post[4])
     	self.comments_label.adjustSize()
 
+    def add_subreddit(self):
+    	new_subreddit, fill = QInputDialog.getText(MainWindow, 'getText', 'Enter the subreddit: r/')
+    	if fill:
+    		if new_subreddit not in subreddits:
+    			subreddits.append(new_subreddit)
+    			file_change = open("subreddits.txt","a")
+    			file.write(',' + new_subreddit)
+    			file.close()
+    			msg = QMessageBox()
+    			msg.setWindowTitle("Success!")
+    			msg.setText("Restart application to see changes")
+    			msg.setIcon(QMessageBox.Information)
+    			x = msg.exec_()
+    		else:
+    			msg = QMessageBox()
+    			msg.setWindowTitle("Oops!")
+    			msg.setText("The subreddit is already added!")
+    			msg.setIcon(QMessageBox.Warning)
+    			y = msg.exec_()
+
+
+
 if __name__ == "__main__":
     import sys
     global subreddits
-    subreddits = ["datascience", "MachineLearning", "pewdiepie"]
+    file = open("subreddits.txt","r+")
+    subreddits = file.read().split(',')
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
